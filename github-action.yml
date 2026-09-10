@@ -1,0 +1,62 @@
+# Publish to Aloic on every push.
+#
+# Copy this to .github/workflows/deploy.yml in your repository, then add your
+# terminal key as a repository secret called ALOIC_KEY. Make one in Settings on
+# aloic.ai, or run `aloic login` and copy the key it saves.
+#
+# THE BUILD RUNS ON GITHUB'S MACHINE, not on Aloic's. That is the whole design:
+# your Actions minutes do the npm install and the build, and only the finished
+# folder is sent. It costs Aloic no compute, which is why this exists instead
+# of a "connect your repository" button that would need one.
+
+name: Deploy to Aloic
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      # THE SAME INSTALLER A LAPTOP USES, rather than `npx aloic`. There is no
+      # `aloic` package on npm and there may never be: the releases are hosted
+      # at get.aloic.ai, which is the address the tool itself checks for
+      # updates. A workflow that reached for the registry would fail on its
+      # first run with a package-not-found nobody could act on.
+      - name: Install the Aloic CLI
+        run: |
+          curl -fsSL https://get.aloic.ai | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      # THE COMMIT MESSAGE ARRIVES AS AN ENVIRONMENT VARIABLE, NOT AS TEXT
+      # PASTED INTO THE SCRIPT.
+      #
+      # It used to be written straight into the command as ${{ ... }}, which
+      # GitHub substitutes before bash ever sees the line: a commit message
+      # containing a quote and a semicolon becomes a second command, running on
+      # the runner, in a step that has the deploy key in its environment.
+      # Anyone who can land a commit could have read the secret. Through `env`
+      # the message is only ever data.
+      - name: Publish
+        env:
+          ALOIC_KEY: ${{ secrets.ALOIC_KEY }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          # The first line only: a title is a heading, and the body of a commit
+          # message belongs in the deploy's description if anywhere.
+          TITLE=$(printf '%s' "$COMMIT_MESSAGE" | head -1)
+          # Started by hand from the Actions tab, there is no commit to read.
+          [ -n "$TITLE" ] || TITLE="Deploy ${GITHUB_SHA:0:7}"
+          aloic deploy ./dist --title "$TITLE"

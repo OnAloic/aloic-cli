@@ -1,0 +1,34 @@
+{
+  "name": "aloic",
+  "version": "0.1.7",
+  "description": "Publish a folder to Aloic from a terminal or a build machine.",
+  "type": "module",
+  "bin": {
+    "aloic": "./aloic.mjs"
+  },
+  "files": [
+    "aloic.mjs",
+    "lib/",
+    "README.md",
+    "github-action.yml"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BenLovesBots/aloic-cli.git"
+  },
+  "homepage": "https://aloic.ai",
+  "keywords": [
+    "aloic",
+    "deploy",
+    "static",
+    "hosting",
+    "cli"
+  ],
+  "bugs": {
+    "url": "https://github.com/BenLovesBots/aloic-cli/issues"
+  }
+}
