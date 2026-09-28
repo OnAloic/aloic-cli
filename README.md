@@ -164,7 +164,3 @@ A terminal key can publish to the projects on your account and nothing else. It 
 - **Limits.** Each deployment can include up to 400 files and 25 MB in total. Files over 4 MB are skipped.
 - **Analytics.** Aloic adds a small analytics script to the HTML pages it serves.
 - **Pinning a version.** Pass a version to the installer: `curl -fsSL https://get.aloic.ai | sh -s -- 0.1.0`.
-
-
-Elevate ideas
-Aloic
